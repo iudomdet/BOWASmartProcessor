@@ -1,6 +1,6 @@
 {
-  "version": "7.2.0",
-  "url": "https://github.com/iudomdet/BOWASmartProcessor/releases/download/7.2.0/BOWASmartProcessor7.2.0.exe",
-  "notes": "",
-  "sha256": "83ce465edadd4d893decd286a221a1d70904e59f475a3f36717ce9b1d699c1c4"
+  "version": "7.2.1",
+  "url": "https://github.com/iudomdet/BOWASmartProcessor/releases/download/7.2.1/BOWASmartProcessor7.2.1.exe",
+  "notes": "แก้ระบบอัปเดต + Label Designer ใหม่",
+  "sha256": "<ค่าจากข้อ 2>"
 }
