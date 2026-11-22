@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BOWA Smart Processor Web</title><meta name="robots" content="noindex,nofollow">
+<style>:root{
+  --bg:#f3f5f9; --panel:#ffffff; --ink:#1b2330; --ink2:#5b6678; --line:#dde3ec;
+  --primary:#1a237e; --primary-ink:#ffffff; --accent:#1976d2; --ok:#2e7d32; --warn:#e65100; --purple:#6a1b9a; --bad:#c62828;
+  --row-found:#e8f5e9; --row-multi:#fff8e1; --row-miss:#fdecea; --sel:#e3f2fd;
+  --radius:10px; --shadow:0 1px 3px rgba(20,30,50,.08),0 4px 14px rgba(20,30,50,.05);
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#10141b; --panel:#181e28; --ink:#e7ebf2; --ink2:#9aa6b8; --line:#2a3342; --primary:#0d1442; --accent:#64b5f6;
+    --row-found:#17301b; --row-multi:#33290f; --row-miss:#3a1a18; --sel:#14304a; --shadow:none; }
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:"Segoe UI","Noto Sans Thai","Leelawadee UI",Tahoma,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+.top{background:var(--primary);color:var(--primary-ink);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.top h1{margin:0;font-size:19px;letter-spacing:.04em}
+.top p{margin:2px 0 0;font-size:12px;opacity:.8}
+.ver{font-size:12px;background:rgba(255,255,255,.15);padding:3px 10px;border-radius:99px}
+.banner{margin:12px 22px 0;padding:10px 14px;border-radius:var(--radius);background:#fff3e0;color:#7a3b00;border:1px solid #ffcc80;font-size:13px}
+@media (prefers-color-scheme:dark){.banner{background:#3a2a10;color:#ffd699;border-color:#6b4a14}}
+.tabs{display:flex;gap:4px;padding:12px 22px 0;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{border:1px solid var(--line);border-bottom:none;background:var(--bg);padding:9px 18px;border-radius:var(--radius) var(--radius) 0 0;cursor:pointer;color:var(--ink2);white-space:nowrap}
+.tab[aria-selected=true]{background:var(--primary);color:#fff;border-color:var(--primary);font-weight:600}
+.tab:focus-visible,.btn:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main{padding:16px 22px 28px;max-width:1500px;margin:0 auto}
+.panel[hidden]{display:none}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+h2{font-size:16px;margin:0 0 4px;color:var(--primary)}
+@media (prefers-color-scheme:dark){h2{color:#9fb4ff}}
+.muted{color:var(--ink2);font-size:12.5px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+.btn{border:1px solid var(--line);background:var(--panel);padding:8px 14px;border-radius:8px;cursor:pointer;transition:filter .12s,background .12s}
+.btn:hover{filter:brightness(.96)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn.warn{background:var(--warn);border-color:var(--warn);color:#fff}
+.btn.purple{background:var(--purple);border-color:var(--purple);color:#fff}
+.btn.bad{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn.wide{width:100%}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chk{display:flex;gap:8px;align-items:flex-start;margin:6px 0}
+.chk input{margin-top:3px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+.stat{background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--c,var(--accent));border-radius:var(--radius);padding:10px 14px}
+.stat b{display:block;font-size:24px;line-height:1.1}
+.stat span{font-size:12px;color:var(--ink2)}
+.bar{height:10px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar>i{display:block;height:100%;width:0;background:var(--accent);transition:width .15s}
+.log{margin-top:12px;max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel)}
+table{border-collapse:collapse;width:100%}
+th,td{padding:6px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top;word-break:break-all}
+th{position:sticky;top:0;background:var(--bg);font-size:12px;color:var(--ink2);z-index:1}
+td.ok{color:var(--ok)} td.bad{color:var(--bad)}
+.split{display:grid;grid-template-columns:minmax(380px,1.15fr) minmax(300px,1fr);gap:14px;margin-top:12px;min-height:420px}
+@media (max-width:900px){.split{grid-template-columns:1fr}.stats{grid-template-columns:1fr}}
+.tablebox{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);overflow:auto;max-height:62vh}
+#resBody tr{cursor:pointer}
+#resBody tr.found{background:var(--row-found)} #resBody tr.multi{background:var(--row-multi)} #resBody tr.miss{background:var(--row-miss)}
+#resBody tr.active{outline:2px solid var(--accent);outline-offset:-2px}
+.cb{width:32px;text-align:center;font-family:ui-monospace,Consolas,monospace}
+.preview{border:1px solid var(--line);border-radius:var(--radius);background:#8a94a6;position:relative;overflow:hidden;min-height:420px;max-height:62vh;display:flex;flex-direction:column}
+.pv-head{background:var(--panel);padding:6px 10px;display:flex;gap:8px;align-items:center;font-size:12px;color:var(--ink2);border-bottom:1px solid var(--line)}
+.pv-stage{flex:1;position:relative;overflow:hidden;cursor:grab;touch-action:none}
+.pv-stage.drag{cursor:grabbing}
+.pv-stage>.pv-item{position:absolute;left:0;top:0;transform-origin:0 0;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.4);max-width:none}
+.pv-msg{position:absolute;inset:0;display:grid;place-items:center;color:#fff;text-align:center;padding:20px;pointer-events:none}
+textarea.terms{width:100%;min-height:96px;resize:vertical;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;margin-top:12px}
+.tool{display:flex;flex-direction:column;gap:8px}
+.tool h3{margin:0;font-size:15px}
+.tool p{margin:0;color:var(--ink2);font-size:12.5px;flex:1;white-space:pre-line}
+dialog{border:none;border-radius:14px;padding:0;max-width:min(560px,92vw);width:100%;background:var(--panel);color:var(--ink);box-shadow:0 10px 50px rgba(0,0,0,.4)}
+dialog::backdrop{background:rgba(10,15,30,.55)}
+.dlg-in{padding:20px}
+.dlg-in h3{margin:0 0 8px}
+.dlg-in .msg{white-space:pre-line;margin:0 0 14px;max-height:50vh;overflow:auto}
+.dlg-btns{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:6px}
+.dlg-in input[type=text],.dlg-in input[type=number],.dlg-in select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--panel);margin-bottom:12px}
+.olist{list-style:none;margin:0 0 12px;padding:0;max-height:44vh;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.olist li{display:flex;gap:8px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--line)}
+.olist li:last-child{border:none}
+.olist li span{flex:1;word-break:break-all}
+.busy{position:fixed;inset:0;background:rgba(10,15,30,.55);display:grid;place-items:center;z-index:50}
+.busy[hidden]{display:none}
+.busy .card{min-width:min(380px,88vw)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1b2330;color:#fff;padding:10px 18px;border-radius:99px;box-shadow:0 6px 24px rgba(0,0,0,.35);z-index:60;max-width:90vw}
+.foot{margin-top:22px;font-size:11.5px;color:var(--ink2);text-align:center}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<header class="top">
+  <div><h1>BOWA SMART PROCESSOR</h1><p>Web Edition · ประมวลผลในเครื่องของคุณทั้งหมด ไม่มีการอัปโหลดไฟล์ไปที่ใด</p></div>
+  <span class="ver" id="ver"></span>
+</header>
+<div id="compat" class="banner" hidden></div>
+<nav class="tabs" role="tablist" aria-label="เมนูหลัก">
+  <button class="tab" role="tab" id="t-rename" aria-controls="tab-rename" aria-selected="true">🏷 Auto Rename</button>
+  <button class="tab" role="tab" id="t-search" aria-controls="tab-search" aria-selected="false">🔍 Search &amp; Print</button>
+  <button class="tab" role="tab" id="t-pdf" aria-controls="tab-pdf" aria-selected="false">📄 PDF Tools</button>
+</nav>
+<main>
+<!-- ===================== AUTO RENAME ===================== -->
+<section class="panel" id="tab-rename" role="tabpanel" aria-labelledby="t-rename">
+  <div class="grid2">
+    <div class="card">
+      <h2>แก้ไขไฟล์ในโฟลเดอร์เดิม</h2>
+      <p class="muted">อ่านบาร์โค้ดที่อยู่บนสุดของหน้าแรก (PDF / PNG / JPG) แล้วเปลี่ยนชื่อไฟล์ตามค่าบาร์โค้ด ไฟล์ที่อ่านไม่ได้จะถูกย้ายไป <code>_unreadable_files</code></p>
+      <label class="chk"><input type="checkbox" id="rnSub"><span>รวมโฟลเดอร์ย่อย</span></label>
+      <label class="chk"><input type="checkbox" id="rnFlat" checked><span>รวมไฟล์ที่เปลี่ยนชื่อมาไว้ที่โฟลเดอร์หลัก (เหมือนโปรแกรมเดิม) <br><span class="muted">ปิดไว้ = เปลี่ยนชื่ออยู่ที่โฟลเดอร์เดิมของไฟล์นั้น</span></span></label>
+      <button class="btn primary wide" id="rnPickDir">📁 เลือกโฟลเดอร์แล้วเริ่มเปลี่ยนชื่อ</button>
+      <p class="muted" id="rnDirNote"></p>
+    </div>
+    <div class="card">
+      <h2>เลือกไฟล์ → ดาวน์โหลดเป็น ZIP</h2>
+      <p class="muted">ใช้ได้ในทุกเบราว์เซอร์ ไฟล์ต้นฉบับไม่ถูกแก้ไข ได้ ZIP ที่มีไฟล์ชื่อใหม่ และโฟลเดอร์ <code>_unreadable_files</code></p>
+      <div class="row"><button class="btn primary" id="rnPickFiles">เลือกไฟล์…</button><button class="btn" id="rnPickFolderInput">เลือกโฟลเดอร์…</button></div>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat" style="--c:#1976d2"><b id="stTotal">0</b><span>ไฟล์ทั้งหมด</span></div>
+    <div class="stat" style="--c:#2e7d32"><b id="stOk">0</b><span>สำเร็จ</span></div>
+    <div class="stat" style="--c:#c62828"><b id="stBad">0</b><span>อ่านไม่ได้ / ผิดพลาด</span></div>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between"><span id="rnCurrent" class="muted">พร้อมทำงาน</span><button class="btn bad" id="rnCancel" hidden>■ หยุด</button></div>
+    <div class="bar" style="margin-top:8px"><i id="rnBar"></i></div>
+    <div class="log" id="rnLogBox" hidden><table><thead><tr><th>ไฟล์เดิม</th><th>ผลลัพธ์</th></tr></thead><tbody id="rnLog"></tbody></table></div>
+  </div>
+</section>
+
+<!-- ===================== SEARCH & PRINT ===================== -->
+<section class="panel" id="tab-search" role="tabpanel" aria-labelledby="t-search" hidden>
+  <div class="card">
+    <div class="row" style="justify-content:space-between;align-items:flex-start">
+      <div style="flex:1;min-width:260px">
+        <h2>รายการเลขเอกสารที่ต้องการค้นหา</h2>
+        <p class="muted">พิมพ์หรือวางทีละบรรทัด ระบบค้นจาก “ชื่อไฟล์” (ไม่สนตัวพิมพ์เล็ก/ใหญ่)</p>
+        <textarea class="terms" id="seTerms" placeholder="SG01843558&#10;SG01843561"></textarea>
+      </div>
+      <div style="min-width:240px">
+        <button class="btn wide" id="sePickDir">📁 เลือกโฟลเดอร์ค้นหา…</button>
+        <p class="muted" id="seDirInfo">ยังไม่ได้เลือกโฟลเดอร์</p>
+      </div>
+    </div>
+  </div>
+  <div class="row" style="margin:12px 0">
+    <button class="btn primary" id="seRun">🔍 เริ่มค้นหาไฟล์ (รวมโฟลเดอร์ย่อย)</button>
+    <button class="btn" id="seAll">✅ เลือกทั้งหมด</button>
+    <button class="btn" id="sePrint">🖨 สั่งพิมพ์รายการที่เลือก</button>
+    <button class="btn warn" id="seCopy">📂 Copy to Folder</button>
+    <button class="btn purple" id="seMerge">➕ Merge Selected PDFs</button>
+    <button class="btn" id="seCsv">📊 ส่งออกรายงาน CSV</button>
+    <button class="btn" id="seClear" style="margin-left:auto">🗑 ล้างข้อมูล</button>
+  </div>
+  <div class="split">
+    <div class="tablebox"><table><thead><tr><th class="cb"></th><th>คำค้น</th><th>สถานะ</th><th>ชื่อไฟล์ที่พบ</th><th>ตำแหน่ง</th></tr></thead><tbody id="resBody"></tbody></table></div>
+    <div class="preview">
+      <div class="pv-head"><b>Interactive Preview</b><span>(เลื่อนล้อเมาส์ = ซูม · ลาก = เลื่อน · ดับเบิลคลิก = รีเซ็ต)</span>
+        <span style="margin-left:auto" class="row"><button class="btn" id="pvPrev" hidden>◀</button><span id="pvPage"></span><button class="btn" id="pvNext" hidden>▶</button><button class="btn" id="pvReset">Reset</button></span></div>
+      <div class="pv-stage" id="pvStage"><div class="pv-msg" id="pvMsg">คลิกที่รายการในตาราง<br>เพื่อดูตัวอย่างเอกสาร</div></div>
+    </div>
+  </div>
+  <p class="muted" style="margin-top:10px">หมายเหตุ: เบราว์เซอร์สั่งพิมพ์แบบเงียบ ๆ ไม่ได้ ปุ่มสั่งพิมพ์จะรวมไฟล์ที่เลือกเป็น PDF ชุดเดียวแล้วเปิดให้พิมพ์ครั้งเดียว</p>
+</section>
+
+<!-- ===================== PDF TOOLS ===================== -->
+<section class="panel" id="tab-pdf" role="tabpanel" aria-labelledby="t-pdf" hidden>
+  <h2>PDF Management Center</h2>
+  <p class="muted">เลือกไฟล์จากเครื่อง ประมวลผลในเบราว์เซอร์ แล้วบันทึกผลลัพธ์ ไฟล์ต้นฉบับไม่ถูกแก้ไข</p>
+  <div class="tools" id="tools"></div>
+</section>
+</main>
+<p class="foot" id="foot"></p>
+
+<dialog id="dlg"><div class="dlg-in" id="dlgIn"></div></dialog>
+<div class="busy" id="busy" hidden><div class="card"><b id="busyMsg">กำลังทำงาน…</b><div class="bar" style="margin-top:10px"><i id="busyBar"></i></div><p class="muted" id="busySub"></p></div></div>
+
+<script src="app.js?v=1.0.0"></script></body></html>
