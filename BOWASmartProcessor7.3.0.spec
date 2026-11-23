@@ -2,7 +2,7 @@
 from PyInstaller.utils.hooks import collect_submodules
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('bowa.ico', '.')]
+datas = [('bowa.ico', '.'), ('portable_fonts', 'portable_fonts')]
 binaries = []
 hiddenimports = []
 hiddenimports += collect_submodules('reportlab.graphics.barcode')

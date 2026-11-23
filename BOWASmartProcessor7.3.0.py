@@ -1701,8 +1701,12 @@ class BowaApp:
         except tk.TclError:
             # เปิดโปรแกรมได้แม้ไม่พบไฟล์ไอคอนหรือระบบไม่รองรับ ICO
             pass
-        self.root.geometry("1300x720")
-        self.root.minsize(1100, 600)
+        # ขนาดเริ่มต้น กว้าง 28 ซม. x สูง 15 ซม. (แปลงตาม DPI ของหน้าจอ) และไม่เกินพื้นที่หน้าจอ
+        px_cm = self.root.winfo_fpixels("1c")
+        start_w = min(int(round(28 * px_cm)), self.root.winfo_screenwidth() - 40)
+        start_h = min(int(round(15 * px_cm)), self.root.winfo_screenheight() - 80)
+        self.root.geometry(f"{start_w}x{start_h}")
+        self.root.minsize(min(start_w, 1000), min(start_h, 540))
         self.root.configure(bg="#F0F2F5")
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
         self.is_busy = False
@@ -2155,7 +2159,7 @@ class BowaApp:
 
         # Left: Results Table
         table_container = tk.Frame(content_split, bg=self.WHITE, highlightthickness=1, highlightbackground="#EEEEEE")
-        content_split.add(table_container, stretch="always", minsize=320)
+        content_split.add(table_container, stretch="always", minsize=300)
 
         cols = ("select", "search_name", "status", "found_name", "full_path")
         self.result_tree = ttk.Treeview(table_container, columns=cols, show="headings")
@@ -2182,16 +2186,34 @@ class BowaApp:
 
         # Right: Interactive Preview Panel
         self.preview_panel = tk.Frame(content_split, bg="#F8F9FA", width=240, highlightthickness=1, highlightbackground="#EEEEEE")
-        content_split.add(self.preview_panel, stretch="never", minsize=180)
+        content_split.add(self.preview_panel, stretch="never", minsize=200)
+        # แผงพรีวิวกว้างประมาณ 1 ใน 3 ของพื้นที่ และคงสัดส่วนนี้เมื่อย่อ/ขยายหน้าต่าง
+        # จนกว่าผู้ใช้จะลากเส้นแบ่งปรับเอง
+        self._preview_sash_user = False
+
+        def place_preview_sash(_e=None):
+            total = content_split.winfo_width()
+            if self._preview_sash_user or total < 600 or not content_split.winfo_ismapped(): return
+            want = int(total * 2 / 3)
+            try:
+                if abs(content_split.sash_coord(0)[0] - want) > 2:
+                    content_split.sash_place(0, want, 0)
+            except tk.TclError:
+                pass
+        content_split.bind("<Configure>", lambda e: content_split.after(60, place_preview_sash))
+        content_split.bind("<Map>", lambda e: content_split.after(120, place_preview_sash))
+        content_split.bind("<ButtonRelease-1>", lambda e: setattr(self, "_preview_sash_user", True))
         self.preview_panel.pack_propagate(False)
 
         preview_header = tk.Frame(self.preview_panel, bg="#F8F9FA")
-        preview_header.pack(fill="x", pady=2)
+        preview_header.pack(fill="x", pady=(2, 0))
         tk.Label(preview_header, text="Interactive Preview", font=("Segoe UI", 8, "bold"), bg="#F8F9FA", fg=self.PRIMARY).pack(side="left", padx=5)
-        tk.Label(preview_header, text="(Scroll: Zoom | Drag: Move)", font=("Segoe UI", 7), bg="#F8F9FA", fg=self.TEXT_LIGHT).pack(side="left")
-        
         reset_btn = tk.Button(preview_header, text="Reset", font=("Segoe UI", 8), command=self.reset_preview, bg="#E0E0E0", relief="flat")
         reset_btn.pack(side="right", padx=5)
+        # คำแนะนำแยกเป็นบรรทัดของตัวเอง และตัดบรรทัดอัตโนมัติตามความกว้างของแผง ไม่ให้ข้อความถูกตัด
+        hint = tk.Label(self.preview_panel, text="เลื่อนล้อเมาส์ = ซูม  |  ลาก = เลื่อนภาพ", font=("Segoe UI", 7), bg="#F8F9FA", fg=self.TEXT_LIGHT, justify="left", anchor="w")
+        hint.pack(fill="x", padx=6, pady=(0, 2))
+        self.preview_panel.bind("<Configure>", lambda e, l=hint: l.config(wraplength=max(60, e.width - 14)))
 
         self.preview_canvas = tk.Canvas(self.preview_panel, bg="white", highlightthickness=0, cursor="fleur")
         self.preview_canvas.pack(fill="both", expand=True, padx=5, pady=(0, 5))
